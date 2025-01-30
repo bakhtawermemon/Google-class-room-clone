@@ -1,22 +1,38 @@
 import React from 'react'
+import { Container, Box, Typography } from '@mui/material';
 
 const WebDevlopment = () => {
   return (
-    <div className="container mt-5 pt-5 mx-auto p-4">
-    <div className="card-header rounded ms-5  position-relative"
-      style={{
-        backgroundImage: `url('https://www.gstatic.com/classroom/themes/img_graduation.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        color: 'white',
-        padding: '80px 0px',
-      }}>
-      <h3 className="card-title mt-5 pt-5 ms-4">
-      Web Dev Frontend S02</h3>
-      <p className="card-text ms-4 mt-1 fs-5">Cohort 02 - Kingri  xWave Team</p>
 
-    </div>
-</div>
+    <Container sx={{ mt: 5, pt: 5, p: 4 }}>
+      <Box sx={{ mx: 'auto' }}>  <Box className="mt-5"
+        sx={{
+          backgroundImage: `url('https://www.gstatic.com/classroom/themes/img_graduation.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: 'white',
+          padding: '80px 0px',
+          borderRadius: '8px',
+          marginLeft: '20px',
+          position: 'relative',
+        }}
+      >
+        <Typography
+          variant="h3" className='ms-4 mt-5 pt-5'
+
+        >
+          Web Dev Frontend S02        </Typography>
+
+        <Typography
+          variant="body1" className='ms-4 mt-1 fs-5'
+
+        >
+          Cohort 02 - Kingri xWave Team
+        </Typography>
+
+      </Box>
+      </Box>
+    </Container>
   )
 }
 
