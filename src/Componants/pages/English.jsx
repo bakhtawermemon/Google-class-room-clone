@@ -1,77 +1,82 @@
+import { Container, Box, Typography } from '@mui/material';
+
+
 import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import {  Tabs, Tab, IconButton} from "@mui/material";
 import { FaVideo, FaCalendarAlt, FaGoogleDrive } from "react-icons/fa";
+import { Link } from "react-router-dom";
+
 
 const English = () => {
   const [activeTab, setActiveTab] = useState("Stream");
 
+  const handleChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
   return (
-    <div className=" mt-5 w-100">
-  <div className="border-bottom w-100 p-0">
-    <div className="d-flex justify-content-around align-items-center py-2 w-100">
-      <div className="d-flex gap-4">
-        <a
-          href="#"
-          className={`text-decoration-none fw-medium ${activeTab === "Stream" ? "text-primary border-bottom border-3 pb-1" : "text-secondary"
-            }`}
-          onClick={() => setActiveTab("Stream")}
+<>
+<Box sx={{ borderBottom: 1, borderColor: "divider", width: "100%" }}>
+      <Container sx={{ mt: 5, pt: 3 }}>
+
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 2 }}>
+          <Tabs value={activeTab} onChange={handleChange} centered>
+            <Tab label="Stream" value="Stream"  sx={{ textTransform: "none", fontWeight: "medium" }} />
+            <Tab label="Classwork" value="Classwork" sx={{ textTransform: "none", fontWeight: "medium" }} />
+            <Tab
+              label="People"
+              value="People"
+           
+              sx={{ textTransform: "none", fontWeight: "medium" }}
+            />
+          </Tabs>
+
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <IconButton>
+              <FaVideo className="text-secondary fs-5" />
+            </IconButton>
+            <IconButton>
+              <FaCalendarAlt className="text-secondary fs-5" />
+            </IconButton>
+            <IconButton sx={{ bgcolor: "lightgray", borderRadius: "50%", width: 32, height: 32 }}>
+              <FaGoogleDrive className="text-secondary fs-5" />
+            </IconButton>
+          </Box>
+        </Box>
+
+      </Container>
+    </Box>
+    <Container sx={{ mt: 5 }}>
+      <Box sx={{ mx: 'auto' }}>  <Box className="mt-5"
+        sx={{
+          backgroundImage: `url('https://www.gstatic.com/classroom/themes/img_graduation.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: 'white',
+          padding: '80px 0px',
+          borderRadius: '8px',
+          marginLeft: '10px',
+          position: 'relative',
+        }}
+      >
+        <Typography
+          variant="h3" className='ms-4 mt-5 pt-5'
+
         >
-          Stream
-        </a>
+         English       </Typography>
 
-        <a
-          href="#"
-          className={`text-decoration-none fw-medium ${activeTab === "Classwork" ? "text-primary border-bottom border-3 pb-1" : "text-secondary"
-            }`}
-          onClick={() => setActiveTab("Classwork")}
+        <Typography
+          variant="body1" className='ms-4 mt-1 fs-5'
+
         >
-          Classwork
-        </a>
+          Cohort 02 - Kingri xWave Team
+        </Typography>
 
-        <a
-          href="#"
-          className={`text-decoration-none fw-medium ${activeTab === "People" ? "text-primary border-bottom border-3 pb-1" : "text-secondary"
-            }`}
-          onClick={() => setActiveTab("People")}
-        >
-          People
-        </a>
-      </div>
+      </Box>
+      </Box>
+    </Container>
+    </>
+  )
+}
 
-      <div className="d-flex gap-3 align-items-center">
-        <FaVideo className="text-secondary fs-5" />
-        <FaCalendarAlt className="text-secondary fs-5" />
-        <div className="rounded-circle bg-light d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
-          <FaGoogleDrive className="text-secondary fs-5" />
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-  
-  );
-};
-
-export default English;
-
-
-
-{/* <div>
-        <div className="border rounded p-4 w-25 mt-3">
-          <div className="flex items-center justify-between col-md-3 mb-4">
-            <div className="flex items-center gap-2">
-              <img
-                src="https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-48dp/logo_meet_2020q4_color_1x_web_48dp.png"
-                alt="Google Meet logo"
-                className="h-6 w-6"
-              />
-              <span className="text-lg">Meet</span>
-            </div>
-
-          </div>
-          <button className="bg-primary border-0 text-white py-2 rounded px-4">
-            Join
-          </button>
-        </div>
-      </div> */}
+export default English
