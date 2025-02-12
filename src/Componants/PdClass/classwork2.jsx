@@ -1,23 +1,29 @@
 
-
-import React, { useState } from "react";
-import { Box, Tabs, Tab, IconButton, Container, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Container, Card, Typography, Avatar, Box, Tabs, Tab, IconButton } from "@mui/material";
+import { Article as ArticleIcon } from "@mui/icons-material";
 import { FaVideo, FaCalendarAlt, FaGoogleDrive } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import Announcement2 from "../WebDevelopment/Announcement2";
-import AnnouncementApp from "../WebDevelopment/Announcement2";
 
+export default function AnnouncementList() {
+  const STORAGE_KEY = "classroom_announcements";
+  const [announcements, setAnnouncements] = useState([]);
+  const [activeTab, setActiveTab] = useState("Classwork");
 
-const WebDevlopment = () => {
-  const [activeTab, setActiveTab] = useState("Stream");
+  useEffect(() => {
+    const storedAnnouncements = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (storedAnnouncements) {
+      setAnnouncements(storedAnnouncements);
+    }
+  }, []);
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
   return (
-<>
-<Box sx={{ borderBottom: 1, borderColor: "divider", width: "100%" }}>
+    <>
+    <Box sx={{ borderBottom: 1, borderColor: "divider", width: "100%" }}>
   <Container sx={{ mt: { xs: 2, md: 5 }, pt: { xs: 2, md: 3 } }}>
     <Box
       sx={{
@@ -27,10 +33,9 @@ const WebDevlopment = () => {
         alignItems: "center",
         py: 2,
         gap: { xs: 2, sm: 2 },
-        flexDirection: { xs: "column", sm: "row" }, // Mobile me column, larger screens par row
+        flexDirection: { xs: "column", sm: "row" }, 
       }}
     >
-      {/* Tabs Section - Mobile par upar dikhane ke liye */}
       <Tabs
         value={activeTab}
         onChange={handleChange}
@@ -43,33 +48,32 @@ const WebDevlopment = () => {
           flexGrow: 1,
           maxWidth: "100%",
           overflowX: "auto",
-          order: { xs: -1, sm: 0 }, // Mobile par sabse pehle dikhane ke liye
+          order: { xs: -1, sm: 0 }, 
         }}
       >
         <Tab
           label="Stream"
           value="Stream"
           component={Link}
-          to="/webdevelopment"
+          to="/pdclass"
           sx={{ textTransform: "none", fontWeight: "medium" }}
         />
         <Tab
           label="Classwork"
           value="Classwork"
           component={Link}
-          to="/classwork3"
+          to="/classwork2"
           sx={{ textTransform: "none", fontWeight: "medium" }}
         />
         <Tab
           label="People"
           value="People"
           component={Link}
-          to="/people3"
+          to="/people2"
           sx={{ textTransform: "none", fontWeight: "medium" }}
         />
       </Tabs>
 
-      {/* Icons Section - Mobile par neeche dikhane ke liye */}
       <Box
         sx={{
           display: "flex",
@@ -77,7 +81,7 @@ const WebDevlopment = () => {
           alignItems: "center",
           flexShrink: 0,
           minWidth: "fit-content",
-          flexDirection: { xs: "row", sm: "row" }, // Icons ek line me rahe har screen par
+          flexDirection: { xs: "row", sm: "row" }, 
           justifyContent: "center",
         }}
       >
@@ -104,38 +108,26 @@ const WebDevlopment = () => {
     </Box>
   </Container>
 </Box>
-    <Container sx={{ mt: 5}}>
-      <Box sx={{ mx: 'auto' }}>  <Box className="mt-5"
-        sx={{
-          backgroundImage: `url('https://www.gstatic.com/classroom/themes/img_graduation.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: 'white',
-          padding: '80px 0px',
-          borderRadius: '8px',
-          marginLeft: '10px',
-          position: 'relative',
-        }}
-      >
-        <Typography
-          variant="h3" className='ms-4 mt-5 pt-5'
-
-        >
-          Web Dev Frontend S02        </Typography>
-
-        <Typography
-          variant="body1" className='ms-4 mt-1 fs-5'
-
-        >
-          Cohort 02 - Kingri xWave Team
-        </Typography>
-
-      </Box>
-      </Box>
-    </Container>  
-    <Announcement2 />
-</>
-  )
+<Container sx={{ mt: 5 }}>
+      <Typography variant="h5" sx={{ mb: 3 }}>
+        View your work 
+      </Typography>
+      {announcements.map((announcement, index) => (
+        <Card key={index} sx={{ p: 2, mb: 2, display: "flex", alignItems: "center", borderRadius: 2 }}>
+          <Avatar sx={{ width: 50, height: 50, backgroundColor: "primary.main" }}>
+            <ArticleIcon sx={{ color: "white" }} />
+          </Avatar>
+          <Box sx={{ flexGrow: 1, textAlign: "left", ml: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>{announcement.title}</Typography>
+            <Typography sx={{ color: "gray" }}>{announcement.date}</Typography>
+            <Typography>{announcement.description}</Typography>
+          </Box>
+        </Card>
+      ))}
+    </Container>
+      
+    </>
+    
+ 
+  );
 }
-
-export default WebDevlopment

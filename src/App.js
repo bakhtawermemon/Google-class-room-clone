@@ -52,6 +52,14 @@ import People from './Componants/EnglishCommunication/people1';
 import ClassWork from './Componants/EnglishCommunication/classwork'
 import People2 from './Componants/PdClass/people2';
 import People3 from './Componants/WebDevelopment/people3';
+import Annoucement from './Componants/EnglishCommunication/Announcement';
+import Announcement2 from './Componants/WebDevelopment/Announcement2';
+import Classwork3 from './Componants/WebDevelopment/classwork3';
+import Announcement3 from './Componants/PdClass/Announcement3';
+import Classwork2 from './Componants/PdClass/classwork2';
+
+
+
 
 
 
@@ -70,7 +78,17 @@ const router = createBrowserRouter([
       { path: "/people", element: <People /> }, 
       { path: "/classwork", element: <ClassWork /> },
       { path: "/people2", element: <People2 /> }, 
-      { path: "/people3", element: <People3 /> }, 
+      { path: "/people3", element: <People3 /> },
+      { path: "/Annoucement", element: <Annoucement /> },
+      { path: "/Annoucement2", element: <Announcement2 /> },
+      { path: "/classwork3", element: <Classwork3 /> },
+      { path: "/Announcement3", element: <Announcement3 />},
+      { path: "/classwork2", element: <Classwork2 /> },
+
+
+
+
+ 
 
     ],
   }

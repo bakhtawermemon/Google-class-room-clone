@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Box, Tabs, Tab, IconButton, Container, Typography } from "@mui/material";
 import { FaVideo, FaCalendarAlt, FaGoogleDrive } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import Announcement3 from "../PdClass/Announcement3";
 
 
 const PdClass = () => {
@@ -55,7 +56,7 @@ const PdClass = () => {
           label="Classwork"
           value="Classwork"
           component={Link}
-          to="/pdclass"
+          to="/classwork2"
           sx={{ textTransform: "none", fontWeight: "medium" }}
         />
         <Tab
@@ -131,6 +132,7 @@ const PdClass = () => {
       </Box>
       </Box>
     </Container>
+    <Announcement3 />
     </>
   )
 }

@@ -152,7 +152,7 @@ const People = () => {
           label="Classwork"
           value="Classwork"
           component={Link}
-          to="/pdclass"
+          to="/classwork2"
           sx={{ textTransform: "none", fontWeight: "medium" }}
         />
         <Tab
