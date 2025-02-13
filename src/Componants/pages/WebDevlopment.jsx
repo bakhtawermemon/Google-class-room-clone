@@ -5,7 +5,6 @@ import { Box, Tabs, Tab, IconButton, Container, Typography } from "@mui/material
 import { FaVideo, FaCalendarAlt, FaGoogleDrive } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Announcement2 from "../WebDevelopment/Announcement2";
-import AnnouncementApp from "../WebDevelopment/Announcement2";
 
 
 const WebDevlopment = () => {

@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from "react";
 import {
   Container,
-  Card,
   Typography,
-  Box,
   Avatar,
+  Box,
   Tabs,
   Tab,
   IconButton,
@@ -34,27 +33,38 @@ export default function Classwork3() {
     description: "",
     date: "",
   });
+  // State to track which assignment's description is expanded
+  const [expanded, setExpanded] = useState({});
 
+  // Load assignments from localStorage on mount
   useEffect(() => {
     const storedAssignments = JSON.parse(localStorage.getItem("assignments")) || [];
     setAssignments(storedAssignments);
   }, []);
+
+  // Save assignments to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem("assignments", JSON.stringify(assignments));
+  }, [assignments]);
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
   const handleOpenMenu = (event, index) => {
+    // Stop propagation so that clicking the menu icon does not toggle description
+    event.stopPropagation();
     setMenuAnchor(event.currentTarget);
     setSelectedIndex(index);
   };
 
   const handleCloseMenu = () => {
     setMenuAnchor(null);
+    setSelectedIndex(null);
   };
 
   const handleOpenDialog = (assignment, index) => {
-    setIsEditMode(true);
+    setIsEditMode(index !== null);
     setSelectedIndex(index);
     setAssignmentDetails(assignment);
     setOpenDialog(true);
@@ -72,8 +82,12 @@ export default function Classwork3() {
   };
 
   const handleSaveAssignment = () => {
-    const updatedAssignments = [...assignments];
-    updatedAssignments[selectedIndex] = assignmentDetails;
+    let updatedAssignments = [...assignments];
+    if (isEditMode && selectedIndex !== null) {
+      updatedAssignments[selectedIndex] = assignmentDetails;
+    } else {
+      updatedAssignments.push(assignmentDetails);
+    }
     setAssignments(updatedAssignments);
     localStorage.setItem("assignments", JSON.stringify(updatedAssignments));
     handleCloseDialog();
@@ -86,9 +100,15 @@ export default function Classwork3() {
     handleCloseMenu();
   };
 
+  // Toggle description visibility for a specific assignment
+  const toggleExpand = (index) => {
+    setExpanded((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
   return (
     <>
-    <Box sx={{ borderBottom: 1, borderColor: "divider", width: "100%" }}>
+      {/* Header with Tabs & Action Icons */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider", width: "100%" }}>
         <Container sx={{ mt: { xs: 2, md: 5 }, pt: { xs: 2, md: 3 } }}>
           <Box
             sx={{
@@ -98,7 +118,7 @@ export default function Classwork3() {
               alignItems: "center",
               py: 2,
               gap: { xs: 2, sm: 2 },
-              flexDirection: { xs: "column", sm: "row" }, 
+              flexDirection: { xs: "column", sm: "row" },
             }}
           >
             <Tabs
@@ -113,7 +133,7 @@ export default function Classwork3() {
                 flexGrow: 1,
                 maxWidth: "100%",
                 overflowX: "auto",
-                order: { xs: -1, sm: 0 }, 
+                order: { xs: -1, sm: 0 },
               }}
             >
               <Tab
@@ -138,7 +158,6 @@ export default function Classwork3() {
                 sx={{ textTransform: "none", fontWeight: "medium" }}
               />
             </Tabs>
-
             <Box
               sx={{
                 display: "flex",
@@ -146,7 +165,6 @@ export default function Classwork3() {
                 alignItems: "center",
                 flexShrink: 0,
                 minWidth: "fit-content",
-                flexDirection: { xs: "row", sm: "row" }, 
                 justifyContent: "center",
               }}
             >
@@ -173,40 +191,62 @@ export default function Classwork3() {
           </Box>
         </Container>
       </Box>
+
+      {/* Work (Assignment) List */}
       <Container sx={{ mt: 5 }}>
         <Typography variant="h5" sx={{ mb: 2 }}>
-  View your work
+          View your work
         </Typography>
         {assignments.length > 0 ? (
           assignments.map((assignment, index) => (
-            <Card
-              key={index}
-              sx={{
-                p: 2,
-                mb: 2,
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "white",
-                border: "1px solid #ddd",
-                borderRadius: 2,
-                justifyContent: "space-between",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Avatar sx={{ width: 50, height: 50, backgroundColor: "primary.main" }}>
-                  <ArticleIcon sx={{ color: "white" }} />
-                </Avatar>
-                <Box sx={{ flexGrow: 1, textAlign: "left", ml: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                    {assignment.title}
-                  </Typography>
-                  <Typography sx={{ color: "gray" }}>{assignment.date}</Typography>
+            <Box key={index} sx={{ mb: 2 }}>
+              {/* Title row with bottom border */}
+              <Box
+                sx={{
+                  borderBottom: "1px solid #ddd",
+                  pb: 2,
+                  mt: 3,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+                onClick={() => toggleExpand(index)}
+              >
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Avatar sx={{ width: 50, height: 50, backgroundColor: "primary.main" }}>
+                    <ArticleIcon sx={{ color: "white" }} />
+                  </Avatar>
+                  <Box sx={{ ml: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                      {assignment.title}
+                    </Typography>
+                    <Typography sx={{ color: "gray" }}>{assignment.date}</Typography>
+                  </Box>
                 </Box>
+                <IconButton
+                  onClick={(event) => handleOpenMenu(event, index)}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <MoreVertIcon />
+                </IconButton>
               </Box>
-              <IconButton onClick={(event) => handleOpenMenu(event, index)}>
-                <MoreVertIcon />
-              </IconButton>
-            </Card>
+              {/* Expandable Description appears below the bottom border */}
+              {expanded[index] && (
+                <Box
+                  sx={{
+                    mt: 1,
+                    p: 2,
+                    backgroundColor: "white",
+                    borderRadius: 2,
+                    boxShadow: 4,
+                    whiteSpace: "pre-line", // preserves line breaks
+                  }}
+                >
+                  <Typography>{assignment.description}</Typography>
+                </Box>
+              )}
+            </Box>
           ))
         ) : (
           <Typography>No assignments found.</Typography>
@@ -221,7 +261,7 @@ export default function Classwork3() {
         <MenuItem onClick={handleDeleteAssignment}>Delete</MenuItem>
       </Menu>
 
-      {/* Edit Dialog */}
+      {/* Edit/Create Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>{isEditMode ? "Edit Assignment" : "Create Assignment"}</DialogTitle>
         <DialogContent>
@@ -258,11 +298,14 @@ export default function Classwork3() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="secondary">Cancel</Button>
-          <Button onClick={handleSaveAssignment} color="primary">Save</Button>
+          <Button onClick={handleCloseDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSaveAssignment} color="primary">
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </>
   );
 }
-

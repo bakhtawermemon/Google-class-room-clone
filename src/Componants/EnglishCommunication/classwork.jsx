@@ -1,67 +1,115 @@
+
 import React, { useState, useEffect } from "react";
 import {
-  Box,
   Container,
+  Card,
+  Typography,
+  Box,
+  Avatar,
   Tabs,
   Tab,
-  Typography,
-  Avatar,
-  Stack,
   IconButton,
   Menu,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import WorkIcon from "@mui/icons-material/Work";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Article as ArticleIcon, MoreVert as MoreVertIcon } from "@mui/icons-material";
 import { FaVideo, FaCalendarAlt, FaGoogleDrive } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
-const Classwork = () => {
+const Classwork4 = () => {
+  // Use the same key as BulletinBoard
+  const LOCAL_STORAGE_KEY = "classroom_notices";
+
+  const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("Classwork");
-  const [announcements, setAnnouncements] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  // Use 'dueDate' to match BulletinBoard's naming
+  const [assignmentDetails, setAssignmentDetails] = useState({ title: "", description: "", dueDate: "" });
+  const [expanded, setExpanded] = useState({});
 
+  // Load saved notices from localStorage
   useEffect(() => {
-    const storedAnnouncements = JSON.parse(localStorage.getItem("announcements"));
-    if (storedAnnouncements) {
-      setAnnouncements(storedAnnouncements);
-    }
+    const savedPosts = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+    setPosts(savedPosts);
   }, []);
 
-  // Handle Tab Change
+  // Tabs change handler
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  // Handle Menu Open
+  // Menu handlers
   const handleMenuOpen = (event, index) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedAnnouncement(index);
+    setMenuAnchor(event.currentTarget);
+    setSelectedIndex(index);
   };
 
-  // Handle Menu Close
   const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedAnnouncement(null);
+    setMenuAnchor(null);
   };
 
-  // Handle Edit (For Future Implementation)
-  const handleEdit = () => {
-    console.log("Edit announcement:", selectedAnnouncement);
+  // Dialog (edit) handlers
+  const handleOpenDialog = (post, index) => {
+    setIsEditMode(true);
+    setAssignmentDetails(post);
+    setSelectedIndex(index);
+    setOpenDialog(true);
     handleMenuClose();
   };
 
-  // Handle Delete
-  const handleDelete = () => {
-    const updatedAnnouncements = announcements.filter((_, index) => index !== selectedAnnouncement);
-    setAnnouncements(updatedAnnouncements);
-    localStorage.setItem("announcements", JSON.stringify(updatedAnnouncements));
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setAssignmentDetails({ title: "", description: "", dueDate: "" });
+  };
+
+  // Handle changes in the dialog text fields
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setAssignmentDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Save (update) an assignment
+  const handleSaveAssignment = () => {
+    let updatedPosts = [...posts];
+    if (isEditMode && selectedIndex !== null) {
+      updatedPosts[selectedIndex] = assignmentDetails;
+    }
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedPosts));
+    setPosts(updatedPosts);
+    handleCloseDialog();
+  };
+
+  // Delete an assignment
+  const handleDeleteAssignment = () => {
+    let updatedPosts = posts.filter((_, index) => index !== selectedIndex);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedPosts));
+    setPosts(updatedPosts);
     handleMenuClose();
   };
+
+  // Toggle expanding/collapsing description area
+  const toggleExpand = (index) => {
+    setExpanded((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+
 
   return (
     <>
+      {/* Navigation & Icons Section */}
       <Box sx={{ borderBottom: 1, borderColor: "divider", width: "100%" }}>
         <Container sx={{ mt: { xs: 2, md: 5 }, pt: { xs: 2, md: 3 } }}>
           <Box
@@ -75,7 +123,6 @@ const Classwork = () => {
               flexDirection: { xs: "column", sm: "row" },
             }}
           >
-            {/* Tabs Section */}
             <Tabs
               value={activeTab}
               onChange={handleChange}
@@ -109,13 +156,22 @@ const Classwork = () => {
                 label="People"
                 value="People"
                 component={Link}
-                to="/People"
+                to="/people"
                 sx={{ textTransform: "none", fontWeight: "medium" }}
               />
             </Tabs>
 
-            {/* Icons Section */}
-            <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 }, alignItems: "center", flexShrink: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: { xs: 1, sm: 2 },
+                alignItems: "center",
+                flexShrink: 0,
+                minWidth: "fit-content",
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
               <IconButton sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }}>
                 <FaVideo className="text-secondary" />
               </IconButton>
@@ -140,61 +196,104 @@ const Classwork = () => {
         </Container>
       </Box>
 
-      <Box sx={{ width: "100%" }}>
-        <Container sx={{ mt: 5, pt: 3 }}>
-          {/* Display Announcements */}
-          <Box sx={{ mt: 2 }}>
-            {announcements.length === 0 ? (
-              <Typography variant="body1" sx={{ textAlign: "center" }}>
-                No announcements available
-              </Typography>
-            ) : (
-              announcements.map((item, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    p: 2,
-                    bgcolor: "#f9f9f9",
-                    borderRadius: 2,
-                    boxShadow: 1,
-                    mb: 2,
-                    borderBottom: index !== announcements.length - 1 ? "1px solid #ddd" : "none",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  {/* Work Avatar and Content */}
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar sx={{ bgcolor: "#1976D2" }}>
-                      <WorkIcon />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body1" dangerouslySetInnerHTML={{ __html: item.text }} />
-                      <Typography variant="body2" sx={{ color: "#757575" }}>
-                        {item.date}
-                      </Typography>
-                    </Box>
-                  </Stack>
 
-                  {/* More Options */}
-                  <IconButton onClick={(e) => handleMenuOpen(e, index)}>
-                    <MoreVertIcon />
-                  </IconButton>
+      {/* Classwork Assignment List */}
+      <Container sx={{ mt: 5 }}>
+        <Typography variant="h4" gutterBottom>
+          Classwork Announcements
+        </Typography>
+        {posts.length > 0 ? (
+          posts.map((post, index) => (
+            <Box key={index} sx={{ position: "relative", cursor: "pointer", mb: 2 }}>
+              {/* Header area */}
+              <Box
+                onClick={() => toggleExpand(index)}
+                sx={{ display: "flex", alignItems: "center", gap: 1, borderBottom: "1px solid #ddd", py: 2 }}
+              >
+                <Avatar sx={{ width: 45, height: 45, backgroundColor: "primary.main" }}>
+                  <ArticleIcon sx={{ color: "white", fontSize: "2rem" }} />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "black" }}>
+                    {post.title}
+                  </Typography>
+                  <Typography sx={{ color: "gray", fontSize: "0.9rem" }}>
+                    {post.dueDate}
+                  </Typography>
                 </Box>
-              ))
-            )}
-          </Box>
-        </Container>
-      </Box>
+              </Box>
+
+              {/* Expandable description */}
+              {expanded[index] && (
+                <Box sx={{ mt: 1, p: 2, backgroundColor: "white", borderRadius: 2, boxShadow: 1 }}>
+                  <Typography sx={{ whiteSpace: "pre-line" }}>{post.description}</Typography>
+                </Box>
+              )}
+
+              {/* Menu icon */}
+              <IconButton onClick={(event) => handleMenuOpen(event, index)} sx={{ position: "absolute", right: 10, top: 10 }}>
+                <MoreVertIcon />
+              </IconButton>
+            </Box>
+          ))
+        ) : (
+          <Typography>No announcements yet.</Typography>
+        )}
+      </Container>
 
       {/* Edit/Delete Menu */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleDelete}>Delete</MenuItem>
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
+        <MenuItem onClick={() => handleOpenDialog(posts[selectedIndex], selectedIndex)}>Edit</MenuItem>
+        <MenuItem onClick={handleDeleteAssignment}>Delete</MenuItem>
       </Menu>
+
+      {/* Edit Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Edit Assignment</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Title"
+            name="title"
+            fullWidth
+            variant="outlined"
+            value={assignmentDetails.title}
+            onChange={handleInputChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={4}
+            value={assignmentDetails.description}
+            onChange={handleInputChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Due Date"
+            name="dueDate"
+            fullWidth
+            variant="outlined"
+            type="date"
+            value={assignmentDetails.dueDate}
+            onChange={handleInputChange}
+            sx={{ mb: 2 }}
+            InputLabelProps={{ shrink: true }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSaveAssignment} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
 
-export default Classwork;
+export default Classwork4;

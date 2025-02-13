@@ -1,317 +1,275 @@
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Avatar,
+  Menu,
+  MenuItem,
+  Container,
+  Card,
+  Button,
+  Grid,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  CardHeader,
+} from "@mui/material";
+import { MoreVert, Article as ArticleIcon } from "@mui/icons-material";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Box, Typography, Avatar, Menu, MenuItem, Container, Card, CardHeader, Button, Grid } from "@mui/material";
-import {IconButton } from "@mui/material";
+export default function BulletinBoard() {
+  const LOCAL_STORAGE_KEY = "classroom_notices";
 
-import BoldIcon from "@mui/icons-material/FormatBold";
-import ItalicIcon from "@mui/icons-material/FormatItalic";
-import UnderlineIcon from "@mui/icons-material/FormatUnderlined";
-import ListIcon from "@mui/icons-material/FormatListBulleted";
-import StrikethroughIcon from "@mui/icons-material/StrikethroughS";
-import WarningIcon from "@mui/icons-material/Warning";
-import YouTubeIcon from "@mui/icons-material/YouTube";
-import UploadIcon from "@mui/icons-material/CloudUpload";
-import LinkIcon from "@mui/icons-material/Link";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-
-export default function Announcement() {
-  const [open, setOpen] = useState(false);
-  const [announcement, setAnnouncement] = useState("");
-  const [announcements, setAnnouncements] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedPostIndex, setSelectedPostIndex] = useState(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    const editableDiv = document.getElementById("announcementBox");
-    if (editableDiv) {
-      editableDiv.setAttribute("dir", "ltr");
-      editableDiv.style.direction = "ltr";
-    }
-  }, [announcement]);
-
-  useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [open]);
+  const [notices, setNotices] = useState([]);
+  const [noticeData, setNoticeData] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+  });
+  const [modalVisible, setModalVisible] = useState(false);
+  const [contextMenuAnchor, setContextMenuAnchor] = useState(null);
+  const [currentNoticeIndex, setCurrentNoticeIndex] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    const storedAnnouncements = JSON.parse(localStorage.getItem("announcements"));
-    if (storedAnnouncements) {
-      setAnnouncements(storedAnnouncements);
-    }
+    const storedNotices = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+    if (storedNotices) setNotices(storedNotices);
   }, []);
 
   useEffect(() => {
-    if (announcements.length > 0) {
-      localStorage.setItem("announcements", JSON.stringify(announcements));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(notices));
+  }, [notices]);
+
+  const computeTimeAgo = (timestamp) => {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - past) / 1000);
+    if (diffInSeconds < 60) return "just now";
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60)
+      return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24)
+      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+  };
+
+  const showModal = (notice = { title: "", description: "", dueDate: "" }, index = null) => {
+    setEditMode(index !== null);
+    setNoticeData(notice);
+    setCurrentNoticeIndex(index);
+    setModalVisible(true);
+  };
+
+  const hideModal = () => {
+    setModalVisible(false);
+    setCurrentNoticeIndex(null);
+    setNoticeData({ title: "", description: "", dueDate: "" });
+  };
+
+  const updateNoticeData = (e) => {
+    setNoticeData({ ...noticeData, [e.target.name]: e.target.value });
+  };
+
+  const storeNotice = () => {
+    if (editMode && currentNoticeIndex !== null) {
+      const updatedNotices = [...notices];
+      updatedNotices[currentNoticeIndex] = {
+        ...noticeData,
+        createdAt:
+          updatedNotices[currentNoticeIndex].createdAt || new Date().toISOString(),
+      };
+      setNotices(updatedNotices);
+    } else {
+      setNotices([
+        { ...noticeData, createdAt: new Date().toISOString() },
+        ...notices,
+      ]);
     }
-  }, [announcements]);
-
-  const handlePost = () => {
-    if (announcement.trim() !== "") {
-      const currentDate = new Date().toLocaleString();
-      const newAnnouncement = { text: announcement, date: currentDate };
-      setAnnouncements((prevAnnouncements) => [newAnnouncement, ...prevAnnouncements]);
-      setAnnouncement("");
-      setOpen(false);
-    }
+    hideModal();
   };
 
-  const handleDelete = (index) => {
-    const updatedAnnouncements = announcements.filter((_, i) => i !== index);
-    setAnnouncements(updatedAnnouncements);
-    handleMenuClose();
+  const removeNotice = () => {
+    setNotices(notices.filter((_, idx) => idx !== currentNoticeIndex));
+    hideContextMenu();
   };
 
-  const handleEdit = (index) => {
-    setAnnouncement(announcements[index].text);
-    handleDelete(index);
-    setOpen(true);
-    handleMenuClose();
+  const showContextMenu = (event, index) => {
+    setContextMenuAnchor(event.currentTarget);
+    setCurrentNoticeIndex(index);
   };
 
-  const handleMenuClick = (event, index) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPostIndex(index);
+  const hideContextMenu = () => {
+    setContextMenuAnchor(null);
+    setCurrentNoticeIndex(null);
   };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedPostIndex(null);
-  };
-
-  const handleFormat = (command) => {
-    document.execCommand(command, false, null);
-  };
-
-
 
   return (
-    <>
-     
-
-      <Container sx={{ mt: 5 }}>
-    
-
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginTop: '15px',
-        }}>
-          <Grid container spacing={2} sx={{ marginTop: 0 }}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                margin: 0,
-                minHeight: 'auto',
-              }}>
-                <Card sx={{
-                  width: 300,
-                  borderRadius: 2,
-                  boxShadow: 1,
-                  padding: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}>
-                  <CardHeader
-                    sx={{
-                      paddingBottom: 2,
-                      paddingLeft: 0,
-                      paddingRight: 2,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                    avatar={<img alt="Google Meet logo" src="https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-48dp/logo_meet_2020q4_color_1x_web_48dp.png" />}
-                    title={<Typography variant="h6" sx={{ fontWeight: 500, marginLeft: 1 }}>Meet</Typography>}
-                    action={
-                      <IconButton className="ms-5 mt-2" sx={{ color: '#5f6368' }}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    }
-                  />
-                  <Button
-                    variant="contained"
-                    sx={{
-                      backgroundColor: '#1a73e8',
-                      color: 'white',
-                      borderRadius: 1,
-                      padding: '10px 24px',
-                      fontSize: 14,
-                      width: '100%',
-                      '&:hover': {
-                        backgroundColor: '#185abc',
-                      },
-                    }}
-                  >
-                    Join
-                  </Button>
-                </Card>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={8}>
-              <Box sx={{ margin: "auto", marginTop: 0, position: "relative" }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    p: 2,
-                    bgcolor: "white",
-                    borderRadius: 2,
-                    boxShadow: 3,
-                    cursor: "pointer",
-                    position: "relative",
-                    zIndex: 1,
-                  }}
-                  onClick={() => setOpen(true)}
-                >
+    <Container sx={{ mt: 5 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={4}>
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Card
+              sx={{
+                width: 300,
+                borderRadius: 2,
+                boxShadow: 1,
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <CardHeader
+                sx={{
+                  pb: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+                avatar={
                   <Avatar
-                    alt="Profile picture"
-                    src="https://lh3.googleusercontent.com/ogw/AF2bZygumxt-R1-aQCaCiBksy_7NpBJaDCoogRjczGAUYpJr-Z0=s32-c-mo"
-                    sx={{ width: 40, height: 40, mr: 2 }}
+                    src="https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-48dp/logo_meet_2020q4_color_1x_web_48dp.png"
+                    sx={{ width: 48, height: 48 }}
                   />
-                  <Typography variant="body1" color="textSecondary">
-                    Announce something to your class
+                }
+                title={
+                  <Typography variant="h6" sx={{ fontWeight: 500, ml: 1 }}>
+                    Meet
                   </Typography>
-                </Box>
+                }
+                action={<IconButton sx={{ color: "#5f6368" }}><MoreVert /></IconButton>}
+              />
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#1a73e8",
+                  color: "white",
+                  borderRadius: 1,
+                  p: "10px 24px",
+                  fontSize: 14,
+                  width: "100%",
+                }}
+              >
+                Join
+              </Button>
+            </Card>
+          </Box>
+        </Grid>
 
-                {open && (
-                  <Box sx={{ marginTop: "20px", backgroundColor: "white", borderRadius: 2, boxShadow: 3, p: 2 }}>
-                    <Box
-                      contentEditable
-                      suppressContentEditableWarning
-                      onInput={(e) => setAnnouncement(e.target.innerHTML)}
-                      dangerouslySetInnerHTML={{ __html: announcement }}
-                      dir="ltr" // Ensures left-to-right typing
-                      sx={{
-                        minHeight: "100px",
-                        border: "1px solid #ccc",
-                        padding: "8px",
-                        borderBottom: "2px solid #4285f4",
-                        textAlign: "left",
-                        direction: "ltr", // Forces correct text direction
-                        unicodeBidi: "isolate", // Completely resets any inherited RTL styles
-                        whiteSpace: "pre-wrap",
-                      }}
-                      onFocus={(e) => {
-                        e.target.setAttribute("dir", "ltr");
-                        e.target.style.direction = "ltr"; // Force LTR on focus
-                      }}
-                      onKeyDown={(e) => {
-                        e.target.setAttribute("dir", "ltr");
-                        e.target.style.direction = "ltr"; // Ensures typing stays LTR
-                      }}
-                    />
+        {/* Notices Section */}
+        <Grid item xs={12} sm={6} md={8}>
+          {/* "Post a notice" Card */}
+          <Card sx={{ p: 2, cursor: "pointer" }} onClick={() => showModal()}>
+            <Typography sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Avatar
+                src="https://lh3.googleusercontent.com/a/ACg8ocLIqzRHHob2faZmkTHmvFX5NeZLOibCqFYzxWukwg2mVHDYh9lh=s40-c"
+                alt="User"
+                sx={{ width: 40, height: 40 }}
+              />
+              Post a notice for your class
+            </Typography>
+          </Card>
 
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 1 }}>
-                      <Box sx={{ display: "flex" }}>
-                        <IconButton onClick={() => handleFormat("bold")}><BoldIcon /></IconButton>
-                        <IconButton onClick={() => handleFormat("italic")}><ItalicIcon /></IconButton>
-                        <IconButton onClick={() => handleFormat("underline")}><UnderlineIcon /></IconButton>
-                        <IconButton onClick={() => handleFormat("insertUnorderedList")}><ListIcon /></IconButton>
-                        <IconButton onClick={() => handleFormat("strikeThrough")}><StrikethroughIcon /></IconButton>
-                      </Box>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <IconButton><WarningIcon /></IconButton>
-                        <IconButton><YouTubeIcon /></IconButton>
-                        <IconButton><UploadIcon /></IconButton>
-                        <IconButton><LinkIcon /></IconButton>
-                        <Typography variant="body2" sx={{ cursor: "pointer", color: "#757575", ml: 2 }} onClick={() => setOpen(false)}>
-                          Cancel
-                        </Typography>
-                        <Typography variant="body2" sx={{ cursor: "pointer", color: "#4285f4", ml: 2 }} onClick={handlePost}>
-                          Post
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                 
-                )}
-
-                <Box sx={{ marginTop: 3 }}>
-                  {announcements.map((item, index) => (
-                    <Box key={index} sx={{ p: 2, bgcolor: "#f9f9f9", borderRadius: 2, boxShadow: 1, marginBottom: 2 }}>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar alt="Work Avatar" src="https://www.shutterstock.com/image-vector/clipboard-icon-vector-task-line-600nw-1924885916.jpg" sx={{ width: 30, height: 30, mr: 2 }} />
-                        <Typography variant="body1" sx={{ flexGrow: 1 }} dangerouslySetInnerHTML={{ __html: item.text }} />
-                        <Typography variant="body2" sx={{ color: "#757575", marginLeft: 2 }}>
-                          {item.date}
-                        </Typography>
-                        <IconButton onClick={(e) => handleMenuClick(e, index)}>
-                          <MoreVertIcon />
-                        </IconButton>
-                      </Box>
-
-                      <Menu anchorEl={anchorEl} open={anchorEl && selectedPostIndex === index} onClose={handleMenuClose}>
-                        <MenuItem onClick={() => handleEdit(selectedPostIndex)}>Edit</MenuItem>
-                        <MenuItem onClick={() => handleDelete(selectedPostIndex)}>Delete</MenuItem>
-                      </Menu>
-                    </Box>
-                  ))}
-                </Box>
+          {/* Notice Cards */}
+          {notices.map((notice, index) => (
+            <Card
+              key={index}
+              sx={{
+                p: 2,
+                mb: 2,
+                mt: 3,
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: "white",
+                border: "1px solid #ddd",
+                borderRadius: 2,
+              }}
+            >
+              <Avatar sx={{ width: 50, height: 50, backgroundColor: "primary.main" }}>
+                <ArticleIcon sx={{ color: "white" }} />
+              </Avatar>
+              <Box sx={{ flexGrow: 1, textAlign: "left", ml: 2 }}>
+                <Typography variant="body2" sx={{ color: "black" }}>
+                  <span style={{ fontWeight: 500, color: "black" }}>
+                    Shazia posted a new assignment:{" "}
+                  </span>
+                  <span style={{ fontWeight: 600, color: "black" }}>
+                    {notice.title}
+                  </span>
+                </Typography>
+                <Typography variant="caption" sx={{ color: "gray" }}>
+                  {notice.createdAt ? computeTimeAgo(notice.createdAt) : "just now"}
+                </Typography>
               </Box>
-            </Grid>
-          </Grid>
+              <IconButton onClick={(event) => showContextMenu(event, index)}>
+                <MoreVert />
+              </IconButton>
+            </Card>
+          ))}
+        </Grid>
+      </Grid>
 
-        </Box>
-      </Container>
-    </>
+      {/* Edit/Delete Context Menu */}
+      <Menu
+        anchorEl={contextMenuAnchor}
+        open={Boolean(contextMenuAnchor)}
+        onClose={hideContextMenu}
+      >
+        <MenuItem onClick={() => showModal(notices[currentNoticeIndex], currentNoticeIndex)}>
+          Edit
+        </MenuItem>
+        <MenuItem onClick={removeNotice}>Delete</MenuItem>
+      </Menu>
+
+      {/* Notice Modal */}
+      <Dialog open={modalVisible} onClose={hideModal}>
+        <DialogTitle>{editMode ? "Edit Notice" : "Create Notice"}</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Title"
+            name="title"
+            fullWidth
+            variant="outlined"
+            value={noticeData.title}
+            onChange={updateNoticeData}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={4}
+            value={noticeData.description}
+            onChange={updateNoticeData}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Due Date"
+            name="dueDate"
+            fullWidth
+            variant="outlined"
+            type="date"
+            value={noticeData.dueDate}
+            onChange={updateNoticeData}
+            sx={{ mb: 2 }}
+            InputLabelProps={{ shrink: true }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={hideModal} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={storeNotice} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
