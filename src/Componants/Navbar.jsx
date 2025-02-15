@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from './images/logo.png';
-import profile from './images/profile pic.jpg';
 import { AppBar, Toolbar, IconButton, Avatar, Menu, MenuItem, Typography, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
@@ -58,8 +57,11 @@ export default function DashboardLayout() {
                             <MenuItem onClick={handleMenuClose}>Create Class</MenuItem>
                         </Menu>
                         <AppsIcon className='me-3' sx={{ fontSize: '1.5rem', color: 'black' }} />
-                        <Avatar src={profile} sx={{ width: 32, height: 32 }} />
-                    </Toolbar>
+                        <Avatar
+                            src="https://lh3.googleusercontent.com/a/ACg8ocLIqzRHHob2faZmkTHmvFX5NeZLOibCqFYzxWukwg2mVHDYh9lh=s40-c"
+                            alt="User"
+                            sx={{ width: 40, height: 40 }}
+                        />                    </Toolbar>
                 </AppBar>
 
                 <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} />
